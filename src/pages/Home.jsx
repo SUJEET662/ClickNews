@@ -1,3 +1,5 @@
+console.log("API Key:", process.env.REACT_APP_NEWS_API_KEY);
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -21,27 +23,26 @@ export default function Home({ category, setCategory, darkMode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-const fetchNews = async (currentPage = 1) => {
-  setLoading(true);
-  setError("");
-  try {
-    const url = searchQuery
-      ? `https://newsapi.org/v2/everything?q=${searchQuery}&apiKey=${process.env.REACT_APP_NEWS_API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`
-      : `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${process.env.REACT_APP_NEWS_API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`;
+  const fetchNews = async (currentPage = 1) => {
+    setLoading(true);
+    setError("");
+    try {
+      const url = searchQuery
+        ? `https://newsapi.org/v2/everything?q=${searchQuery}&apiKey=${process.env.REACT_APP_NEWS_API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`
+        : `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${process.env.REACT_APP_NEWS_API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`;
 
-    const res = await axios.get(url);
-    const newArticles = res.data.articles || [];
-    setArticles(
-      currentPage === 1 ? newArticles : [...articles, ...newArticles]
-    );
-    setHasMore(newArticles.length === PAGE_SIZE);
-  } catch (err) {
-    console.error("Fetch Error:", err);
-    setError("Failed to fetch news. Please try again later.");
-  }
-  setLoading(false);
-};
-
+      const res = await axios.get(url);
+      const newArticles = res.data.articles || [];
+      setArticles(
+        currentPage === 1 ? newArticles : [...articles, ...newArticles]
+      );
+      setHasMore(newArticles.length === PAGE_SIZE);
+    } catch (err) {
+      console.error("Fetch Error:", err);
+      setError("Failed to fetch news. Please try again later.");
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
     setPage(1);
