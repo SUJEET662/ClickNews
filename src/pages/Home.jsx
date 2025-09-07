@@ -6,7 +6,12 @@ import SearchBar from "../components/SearchBar";
 import { motion } from "framer-motion";
 
 const PAGE_SIZE = 20;
-const API_KEY = process.env.REACT_APP_NEWS_API_KEY; // ✅ Read once at build time
+
+// Detect local vs Vercel
+const BASE_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:3000/api/news"
+    : "/api/news";
 
 export default function Home({ category, setCategory, darkMode }) {
   const [articles, setArticles] = useState([]);
@@ -21,17 +26,17 @@ const fetchNews = async (currentPage = 1) => {
   setError("");
   try {
     const url = searchQuery
-      ? `/api/news?q=${searchQuery}&page=${currentPage}&pageSize=${PAGE_SIZE}`
-      : `/api/news?category=${category}&page=${currentPage}&pageSize=${PAGE_SIZE}`;
+      ? `https://newsapi.org/v2/everything?q=${searchQuery}&apiKey=${process.env.REACT_APP_NEWS_API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`
+      : `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${process.env.REACT_APP_NEWS_API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`;
 
     const res = await axios.get(url);
-    const newArticles = res.data.articles;
+    const newArticles = res.data.articles || [];
     setArticles(
       currentPage === 1 ? newArticles : [...articles, ...newArticles]
     );
     setHasMore(newArticles.length === PAGE_SIZE);
   } catch (err) {
-    console.error(err);
+    console.error("Fetch Error:", err);
     setError("Failed to fetch news. Please try again later.");
   }
   setLoading(false);
@@ -41,7 +46,8 @@ const fetchNews = async (currentPage = 1) => {
   useEffect(() => {
     setPage(1);
     fetchNews(1);
-  }, [category, searchQuery]); // ✅ No apiKey dependency needed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, searchQuery]);
 
   const fetchMoreData = () => {
     const nextPage = page + 1;

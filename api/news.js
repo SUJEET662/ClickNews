@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   try {
     const { category = "general", page = 1, pageSize = 20, q } = req.query;
 
-    const API_KEY = process.env.NEWS_API_KEY; // ✅ No REACT_APP_ needed here
+    const API_KEY = process.env.NEWS_API_KEY; // secure env variable
 
     const url = q
       ? `https://newsapi.org/v2/everything?q=${q}&apiKey=${API_KEY}&page=${page}&pageSize=${pageSize}`
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     const response = await axios.get(url);
     res.status(200).json(response.data);
   } catch (error) {
-    console.error(error);
+    console.error("API Error:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to fetch news" });
   }
 }
