@@ -6,6 +6,7 @@ import SearchBar from "../components/SearchBar";
 import { motion } from "framer-motion";
 
 const PAGE_SIZE = 20;
+const API_KEY = process.env.REACT_APP_NEWS_API_KEY; // ✅ Read once at build time
 
 export default function Home({ category, setCategory, darkMode }) {
   const [articles, setArticles] = useState([]);
@@ -16,12 +17,20 @@ export default function Home({ category, setCategory, darkMode }) {
   const [error, setError] = useState("");
 
   const fetchNews = async (currentPage = 1) => {
+    if (!API_KEY) {
+      setError(
+        "News API key is not configured. Please check your environment variables."
+      );
+      console.error("REACT_APP_NEWS_API_KEY is not set");
+      return;
+    }
+
     setLoading(true);
     setError("");
     try {
       const url = searchQuery
-        ? `https://newsapi.org/v2/everything?q=${searchQuery}&apiKey=${process.env.REACT_APP_NEWS_API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`
-        : `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${process.env.REACT_APP_NEWS_API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`;
+        ? `https://newsapi.org/v2/everything?q=${searchQuery}&apiKey=${API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`
+        : `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`;
 
       const res = await axios.get(url);
       const newArticles = res.data.articles;
@@ -31,7 +40,15 @@ export default function Home({ category, setCategory, darkMode }) {
       setHasMore(newArticles.length === PAGE_SIZE);
     } catch (err) {
       console.error(err);
-      setError("Failed to fetch news. Please try again later.");
+      if (err.response && err.response.status === 401) {
+        setError(
+          "Invalid API key. Please check your News API key configuration."
+        );
+      } else if (err.response && err.response.status === 429) {
+        setError("API rate limit exceeded. Please try again later.");
+      } else {
+        setError("Failed to fetch news. Please try again later.");
+      }
     }
     setLoading(false);
   };
@@ -39,8 +56,7 @@ export default function Home({ category, setCategory, darkMode }) {
   useEffect(() => {
     setPage(1);
     fetchNews(1);
-
-  }, [category, searchQuery]);
+  }, [category, searchQuery]); // ✅ No apiKey dependency needed
 
   const fetchMoreData = () => {
     const nextPage = page + 1;
