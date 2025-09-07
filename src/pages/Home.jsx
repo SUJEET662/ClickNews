@@ -1,4 +1,3 @@
-console.log("API Key:", process.env.REACT_APP_NEWS_API_KEY);
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -6,6 +5,8 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import NewsCard from "../components/NewsCard";
 import SearchBar from "../components/SearchBar";
 import { motion } from "framer-motion";
+
+console.log("API Key:", process.env.REACT_APP_NEWS_API_KEY);
 
 const PAGE_SIZE = 20;
 
