@@ -16,42 +16,27 @@ export default function Home({ category, setCategory, darkMode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchNews = async (currentPage = 1) => {
-    if (!API_KEY) {
-      setError(
-        "News API key is not configured. Please check your environment variables."
-      );
-      console.error("REACT_APP_NEWS_API_KEY is not set");
-      return;
-    }
+const fetchNews = async (currentPage = 1) => {
+  setLoading(true);
+  setError("");
+  try {
+    const url = searchQuery
+      ? `/api/news?q=${searchQuery}&page=${currentPage}&pageSize=${PAGE_SIZE}`
+      : `/api/news?category=${category}&page=${currentPage}&pageSize=${PAGE_SIZE}`;
 
-    setLoading(true);
-    setError("");
-    try {
-      const url = searchQuery
-        ? `https://newsapi.org/v2/everything?q=${searchQuery}&apiKey=${API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`
-        : `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`;
+    const res = await axios.get(url);
+    const newArticles = res.data.articles;
+    setArticles(
+      currentPage === 1 ? newArticles : [...articles, ...newArticles]
+    );
+    setHasMore(newArticles.length === PAGE_SIZE);
+  } catch (err) {
+    console.error(err);
+    setError("Failed to fetch news. Please try again later.");
+  }
+  setLoading(false);
+};
 
-      const res = await axios.get(url);
-      const newArticles = res.data.articles;
-      setArticles(
-        currentPage === 1 ? newArticles : [...articles, ...newArticles]
-      );
-      setHasMore(newArticles.length === PAGE_SIZE);
-    } catch (err) {
-      console.error(err);
-      if (err.response && err.response.status === 401) {
-        setError(
-          "Invalid API key. Please check your News API key configuration."
-        );
-      } else if (err.response && err.response.status === 429) {
-        setError("API rate limit exceeded. Please try again later.");
-      } else {
-        setError("Failed to fetch news. Please try again later.");
-      }
-    }
-    setLoading(false);
-  };
 
   useEffect(() => {
     setPage(1);
