@@ -5,9 +5,6 @@ import NewsCard from "../components/NewsCard";
 import SearchBar from "../components/SearchBar";
 import { motion } from "framer-motion";
 
-// ✅ Only after all imports
-console.log("API Key at build:", process.env.REACT_APP_NEWS_API_KEY);
-
 const PAGE_SIZE = 20;
 
 export default function Home({ category, setCategory, darkMode }) {
@@ -23,18 +20,17 @@ export default function Home({ category, setCategory, darkMode }) {
     setError("");
     try {
       const url = searchQuery
-        ? `/api/news?q=${searchQuery}&page=${currentPage}&pageSize=${PAGE_SIZE}`
-        : `/api/news?category=${category}&page=${currentPage}&pageSize=${PAGE_SIZE}`;
+        ? `https://newsapi.org/v2/everything?q=${searchQuery}&apiKey=${process.env.REACT_APP_NEWS_API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`
+        : `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${process.env.REACT_APP_NEWS_API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`;
 
       const res = await axios.get(url);
-      const newArticles = res.data.articles;
-
+      const newArticles = res.data.articles || [];
       setArticles(
         currentPage === 1 ? newArticles : [...articles, ...newArticles]
       );
       setHasMore(newArticles.length === PAGE_SIZE);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch Error:", err);
       setError("Failed to fetch news. Please try again later.");
     }
     setLoading(false);
@@ -43,6 +39,7 @@ export default function Home({ category, setCategory, darkMode }) {
   useEffect(() => {
     setPage(1);
     fetchNews(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, searchQuery]);
 
   const fetchMoreData = () => {

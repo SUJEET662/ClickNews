@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import {
   FaGlobe,
@@ -22,7 +22,7 @@ const defaultCategories = [
 ];
 
 export default function Sidebar({ category, setCategory }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
   const [favorites, setFavorites] = useState([]);
   const [search, setSearch] = useState("");
 
@@ -33,6 +33,17 @@ export default function Sidebar({ category, setCategory }) {
       prev.includes(name) ? prev.filter((f) => f !== name) : [...prev, name]
     );
   };
+
+  // Auto-collapse on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) setCollapsed(true);
+      else setCollapsed(false);
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const filteredCategories = defaultCategories.filter((cat) =>
     cat.name.toLowerCase().includes(search.toLowerCase())
@@ -56,7 +67,6 @@ export default function Sidebar({ category, setCategory }) {
           </button>
         </div>
 
-       
         {!collapsed && (
           <div className="p-2">
             <input
@@ -69,9 +79,8 @@ export default function Sidebar({ category, setCategory }) {
           </div>
         )}
 
-        
         <div className="flex flex-col mt-4 gap-2 px-2 flex-1 overflow-y-auto">
-          {filteredCategories.map((cat, index) => (
+          {filteredCategories.map((cat) => (
             <motion.div
               key={cat.name}
               whileHover={{ scale: 1.05 }}
@@ -92,21 +101,25 @@ export default function Sidebar({ category, setCategory }) {
                 </span>
 
                 {!collapsed && (
-                  <button
+                  <span
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleFavorite(cat.name);
                     }}
-                    className="text-yellow-400 hover:text-yellow-300 transition"
+                    className="text-yellow-400 hover:text-yellow-300 transition cursor-pointer"
                   >
                     <Star
                       size={16}
+                      color={
+                        favorites.includes(cat.name)
+                          ? "#FFD700"
+                          : "currentColor"
+                      }
                       fill={favorites.includes(cat.name) ? "#FFD700" : "none"}
                     />
-                  </button>
+                  </span>
                 )}
 
-                
                 {category === cat.name && !collapsed && (
                   <motion.span
                     layoutId="activeIndicator"
