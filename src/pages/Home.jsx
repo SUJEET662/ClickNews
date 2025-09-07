@@ -19,11 +19,9 @@ export default function Home({ category, setCategory, darkMode }) {
     setLoading(true);
     setError("");
     try {
-      const url = searchQuery
-        ? `https://newsapi.org/v2/everything?q=${searchQuery}&apiKey=${process.env.REACT_APP_NEWS_API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`
-        : `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${process.env.REACT_APP_NEWS_API_KEY}&page=${currentPage}&pageSize=${PAGE_SIZE}`;
+const url = `/api/news?category=${category}&q=${searchQuery}&page=${currentPage}&pageSize=${PAGE_SIZE}`;
+const res = await axios.get(url);
 
-      const res = await axios.get(url);
       const newArticles = res.data.articles || [];
       setArticles(
         currentPage === 1 ? newArticles : [...articles, ...newArticles]
