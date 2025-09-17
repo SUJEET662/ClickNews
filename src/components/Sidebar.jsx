@@ -34,7 +34,6 @@ export default function Sidebar({ category, setCategory }) {
     );
   };
 
-  // Auto-collapse on window resize
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) setCollapsed(true);
