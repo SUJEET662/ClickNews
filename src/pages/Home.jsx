@@ -15,45 +15,51 @@ export default function Home({ category }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchNews = useCallback(
-    async (currentPage = 1, query = "") => {
-      setLoading(true);
-      setError("");
+const fetchNews = useCallback(
+  async (currentPage = 1, query = "") => {
+    setLoading(true);
+    setError("");
 
-      try {
-        const params = {
-          page: currentPage,
-          pageSize: PAGE_SIZE,
-          _: Date.now(),
-        };
+    try {
+      const params = {
+        page: currentPage,
+        pageSize: PAGE_SIZE,
+        _: Date.now(),
+      };
 
-        if (query && query.trim() !== "") {
-          params.q = query;
-        } else {
-          params.category = category;
-        }
-
-        const res = await axios.get("http://localhost:3001/api/news", {
-          params: params,
-        });
-
-        const newArticles = res.data.articles || [];
-
-        if (currentPage === 1) {
-          setArticles(newArticles);
-        } else {
-          setArticles((prev) => [...prev, ...newArticles]);
-        }
-
-        setHasMore(newArticles.length === PAGE_SIZE);
-      } catch (err) {
-        setError("Failed to fetch news. Please try again.");
-      } finally {
-        setLoading(false);
+      if (query && query.trim() !== "") {
+        params.q = query;
+      } else {
+        params.category = category;
       }
-    },
-    [category]
-  );
+
+      // ADD THIS - Dynamic API URL for production/development
+      const API_BASE =
+        process.env.NODE_ENV === "production"
+          ? "/api"
+          : "http://localhost:3001/api";
+
+      const res = await axios.get(`${API_BASE}/news`, {
+        params: params,
+      });
+
+      const newArticles = res.data.articles || [];
+
+      if (currentPage === 1) {
+        setArticles(newArticles);
+      } else {
+        setArticles((prev) => [...prev, ...newArticles]);
+      }
+
+      setHasMore(newArticles.length === PAGE_SIZE);
+    } catch (err) {
+      setError("Failed to fetch news. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  },
+  [category]
+);
 
   useEffect(() => {
     setPage(1);
